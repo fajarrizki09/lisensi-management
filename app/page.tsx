@@ -19,6 +19,8 @@ type LicenseRow = {
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/license';
+const ADMIN_SESSION_KEY = 'clipforge-admin-session';
+const ADMIN_PASSWORD_KEY = 'clipforge-admin-password';
 
 export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,6 +31,19 @@ export default function Dashboard() {
   const [message, setMessage] = useState('');
 
   const pendingCount = useMemo(() => licenses.filter((license) => license.status === 'pending').length, [licenses]);
+
+  useEffect(() => {
+    try {
+      const savedSession = window.sessionStorage.getItem(ADMIN_SESSION_KEY);
+      const savedPassword = window.sessionStorage.getItem(ADMIN_PASSWORD_KEY);
+      if (savedSession === 'active' && savedPassword) {
+        setAdminPassword(savedPassword);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      // Session storage tidak tersedia; tetap tampilkan login normal.
+    }
+  }, []);
 
   const callApi = useCallback(async (payload: Record<string, unknown>) => {
     const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -60,6 +75,10 @@ export default function Dashboard() {
     setLoading(true);
     try {
       await callApi({ path: 'admin-login', password: adminPassword });
+      try {
+        window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'active');
+        window.sessionStorage.setItem(ADMIN_PASSWORD_KEY, adminPassword);
+      } catch (storageError) {}
       setIsAuthenticated(true);
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : 'Password Admin salah');
@@ -171,6 +190,9 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           {pendingCount > 0 && <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">{pendingCount} pending</span>}
+          <button onClick={() => { window.sessionStorage.removeItem(ADMIN_SESSION_KEY); window.sessionStorage.removeItem(ADMIN_PASSWORD_KEY); setIsAuthenticated(false); setAdminPassword(''); setLicenses([]); }} className="inline-flex items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-slate-600 hover:bg-slate-50">
+            Logout
+          </button>
           <button onClick={loadLicenses} disabled={loading} className="inline-flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-60">
             <RefreshCw size={16} /> Refresh
           </button>
