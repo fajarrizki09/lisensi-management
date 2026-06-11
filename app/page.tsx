@@ -81,72 +81,72 @@ export default function Dashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="relative flex min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_#2563eb_0,_transparent_34%),radial-gradient(circle_at_bottom_right,_#7c3aed_0,_transparent_32%),linear-gradient(135deg,_#020617,_#0f172a_45%,_#111827)] px-6 py-10 text-white">
-        <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-cyan-400/20 blur-3xl" />
-        <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
-        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="hidden lg:block">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-cyan-100 shadow-2xl shadow-cyan-950/30 backdrop-blur">
+      <div className="login-shell" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '32px', color: '#fff', background: 'radial-gradient(circle at 12% 10%, rgba(37,99,235,.72), transparent 34%), radial-gradient(circle at 88% 88%, rgba(124,58,237,.58), transparent 32%), linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%)', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+        <div style={{ position: 'absolute', left: '50%', top: '-120px', width: 420, height: 420, transform: 'translateX(-50%)', borderRadius: 999, background: 'rgba(34,211,238,.18)', filter: 'blur(70px)' }} />
+        <div style={{ position: 'absolute', right: '-80px', bottom: '-80px', width: 360, height: 360, borderRadius: 999, background: 'rgba(217,70,239,.18)', filter: 'blur(70px)' }} />
+        <div style={{ position: 'relative', width: '100%', maxWidth: 1120, display: 'grid', gridTemplateColumns: 'minmax(0,1.05fr) minmax(360px,.95fr)', gap: 48, alignItems: 'center' }}>
+          <section className="login-hero" style={{ display: 'block' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 24, padding: '10px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,.16)', background: 'rgba(255,255,255,.10)', color: '#cffafe', fontSize: 14, boxShadow: '0 20px 60px rgba(8,47,73,.25)', backdropFilter: 'blur(14px)' }}>
               <Sparkles size={16} /> License Management Console
             </div>
-            <h1 className="max-w-xl text-5xl font-black leading-tight tracking-tight">
+            <h1 style={{ maxWidth: 600, margin: 0, fontSize: 56, lineHeight: 1.02, letterSpacing: '-.045em', fontWeight: 900 }}>
               Kelola aktivasi lisensi dengan cepat dan aman.
             </h1>
-            <p className="mt-5 max-w-lg text-lg leading-8 text-slate-300">
+            <p style={{ maxWidth: 560, marginTop: 22, color: '#cbd5e1', fontSize: 18, lineHeight: 1.8 }}>
               Approve user baru, revoke akses, pantau device UID, dan lindungi fitur Pro Video Clipper dari satu dashboard admin.
             </p>
-            <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
+            <div style={{ marginTop: 34, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12, maxWidth: 590 }}>
               {['Pending approval', 'Device lock', 'Audit ready'].map((item) => (
-                <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 text-sm text-slate-200 backdrop-blur">
-                  <ShieldCheck className="mb-3 text-emerald-300" size={22} />
+                <div key={item} style={{ minHeight: 88, borderRadius: 22, border: '1px solid rgba(255,255,255,.12)', background: 'rgba(255,255,255,.075)', padding: 18, color: '#e2e8f0', fontSize: 14, backdropFilter: 'blur(12px)' }}>
+                  <ShieldCheck style={{ display: 'block', marginBottom: 12, color: '#6ee7b7' }} size={23} />
                   {item}
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="mx-auto w-full max-w-md">
-            <div className="rounded-[2rem] border border-white/15 bg-white/10 p-2 shadow-2xl shadow-black/30 backdrop-blur-2xl">
-              <div className="rounded-[1.6rem] bg-white p-8 text-slate-900 shadow-xl">
-                <div className="mb-6 flex items-center justify-between">
+          <section style={{ width: '100%', maxWidth: 460, margin: '0 auto' }}>
+            <div style={{ borderRadius: 34, border: '1px solid rgba(255,255,255,.16)', background: 'rgba(255,255,255,.10)', padding: 8, boxShadow: '0 30px 90px rgba(0,0,0,.36)', backdropFilter: 'blur(22px)' }}>
+              <div style={{ borderRadius: 26, background: '#fff', padding: 34, color: '#0f172a', boxShadow: '0 22px 45px rgba(15,23,42,.18)' }}>
+                <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18 }}>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-600">ClipForge</p>
-                    <h2 className="mt-2 text-2xl font-black tracking-tight">Admin Login</h2>
+                    <p style={{ margin: 0, color: '#2563eb', fontSize: 13, fontWeight: 800, letterSpacing: '.20em', textTransform: 'uppercase' }}>ClipForge</p>
+                    <h2 style={{ margin: '8px 0 0', fontSize: 30, lineHeight: 1.1, fontWeight: 900, letterSpacing: '-.035em' }}>Admin Login</h2>
                   </div>
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/30">
+                  <div style={{ width: 58, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 20, background: 'linear-gradient(135deg,#2563eb,#4f46e5)', color: '#fff', boxShadow: '0 14px 28px rgba(37,99,235,.34)' }}>
                     <Lock size={26} />
                   </div>
                 </div>
 
-                <p className="mb-6 text-sm leading-6 text-slate-500">
-                  Masukkan password admin yang sama dengan Script Properties <span className="font-semibold text-slate-700">ADMIN_PASSWORD</span> di Google Apps Script.
+                <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: 14, lineHeight: 1.7 }}>
+                  Masukkan password admin yang sama dengan Script Properties <span style={{ color: '#334155', fontWeight: 800 }}>ADMIN_PASSWORD</span> di Google Apps Script.
                 </p>
 
                 {loginError && (
-                  <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                    <AlertCircle className="mt-0.5 shrink-0" size={18} />
+                  <div style={{ marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 18, border: '1px solid #fecaca', background: '#fef2f2', padding: 16, color: '#b91c1c', fontSize: 14 }}>
+                    <AlertCircle style={{ marginTop: 2, flexShrink: 0 }} size={18} />
                     <span>{loginError}</span>
                   </div>
                 )}
 
-                <form onSubmit={handleAdminLogin} className="space-y-5">
+                <form onSubmit={handleAdminLogin} style={{ display: 'grid', gap: 20 }}>
                   <div>
-                    <label className="mb-2 block text-sm font-bold text-slate-700">Admin Password</label>
-                    <div className="relative">
-                      <KeyRound className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={19} />
+                    <label style={{ display: 'block', marginBottom: 9, color: '#334155', fontSize: 14, fontWeight: 800 }}>Admin Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <KeyRound style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} size={19} />
                       <input
                         type="password"
                         value={adminPassword}
                         onChange={(e) => setAdminPassword(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        style={{ width: '100%', boxSizing: 'border-box', borderRadius: 18, border: '1px solid #e2e8f0', background: '#f8fafc', padding: '16px 16px 16px 48px', color: '#0f172a', outline: 'none', fontSize: 15, boxShadow: 'inset 0 1px 0 rgba(255,255,255,.8)' }}
                         placeholder="Masukkan password admin"
                         required
                       />
                     </div>
                   </div>
-                  <button type="submit" disabled={loading} className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 font-bold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-600/30 disabled:cursor-not-allowed disabled:opacity-60">
+                  <button type="submit" disabled={loading} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, border: 0, borderRadius: 18, background: 'linear-gradient(135deg,#2563eb,#4f46e5)', padding: '16px 20px', color: '#fff', fontWeight: 900, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 18px 32px rgba(37,99,235,.28)', opacity: loading ? .65 : 1 }}>
                     Masuk Dashboard
-                    <ArrowRight className="transition group-hover:translate-x-1" size={18} />
+                    <ArrowRight size={18} />
                   </button>
                 </form>
               </div>
