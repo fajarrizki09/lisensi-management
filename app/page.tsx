@@ -18,7 +18,7 @@ type LicenseRow = {
   effective_status?: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://script.google.com/macros/s/AKfycbwDvp1ET8rsaNxqYMkzYQlWgn6l6qM_r2M9ukZgBBqHZj1rMIxZcd8x920MVd8J-SA08Q/exec';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/license';
 
 export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,11 +57,14 @@ export default function Dashboard() {
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+    setLoading(true);
     try {
       await callApi({ path: 'admin-login', password: adminPassword });
       setIsAuthenticated(true);
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : 'Password Admin salah');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,7 +148,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <button type="submit" disabled={loading} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, border: 0, borderRadius: 18, background: 'linear-gradient(135deg,#2563eb,#4f46e5)', padding: '16px 20px', color: '#fff', fontWeight: 900, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 18px 32px rgba(37,99,235,.28)', opacity: loading ? .65 : 1 }}>
-                    Masuk Dashboard
+                    {loading ? 'Memeriksa password...' : 'Masuk Dashboard'}
                     <ArrowRight size={18} />
                   </button>
                 </form>
