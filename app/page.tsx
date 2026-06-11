@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, CheckCircle2, Lock, RefreshCw, Shield, Smartphone, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight, CheckCircle2, KeyRound, Lock, RefreshCw, Shield, ShieldCheck, Smartphone, Sparkles, XCircle } from 'lucide-react';
 
 type LicenseRow = {
   id: string;
@@ -41,14 +41,14 @@ export default function Dashboard() {
     setLoading(true);
     setMessage('');
     try {
-      const data = await callApi({ path: 'list-licenses' });
+      const data = await callApi({ path: 'list-licenses', admin_password: adminPassword });
       setLicenses(Array.isArray(data.licenses) ? data.licenses : []);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Gagal load licenses');
     } finally {
       setLoading(false);
     }
-  }, [callApi]);
+  }, [adminPassword, callApi]);
 
   useEffect(() => {
     if (isAuthenticated) loadLicenses();
@@ -81,30 +81,90 @@ export default function Dashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center">
-        <div className="w-full max-w-md rounded-lg border bg-white p-8 shadow-sm">
-          <div className="mb-4 flex justify-center text-blue-600"><Lock size={40} /></div>
-          <h2 className="mb-6 text-center text-xl font-bold text-gray-800">Admin Authentication</h2>
-          {loginError && <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">{loginError}</div>}
-          <form onSubmit={handleAdminLogin} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Admin Password</label>
-              <input type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className="w-full rounded border p-2 text-black" placeholder="Enter password..." required />
-              <p className="mt-1 text-xs text-gray-400">Sesuai Script Properties: ADMIN_PASSWORD</p>
+      <div className="relative flex min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_#2563eb_0,_transparent_34%),radial-gradient(circle_at_bottom_right,_#7c3aed_0,_transparent_32%),linear-gradient(135deg,_#020617,_#0f172a_45%,_#111827)] px-6 py-10 text-white">
+        <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-cyan-400/20 blur-3xl" />
+        <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="hidden lg:block">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-cyan-100 shadow-2xl shadow-cyan-950/30 backdrop-blur">
+              <Sparkles size={16} /> License Management Console
             </div>
-            <button type="submit" className="w-full rounded bg-blue-600 p-2 font-medium text-white transition hover:bg-blue-700">Sign In</button>
-          </form>
+            <h1 className="max-w-xl text-5xl font-black leading-tight tracking-tight">
+              Kelola aktivasi lisensi dengan cepat dan aman.
+            </h1>
+            <p className="mt-5 max-w-lg text-lg leading-8 text-slate-300">
+              Approve user baru, revoke akses, pantau device UID, dan lindungi fitur Pro Video Clipper dari satu dashboard admin.
+            </p>
+            <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
+              {['Pending approval', 'Device lock', 'Audit ready'].map((item) => (
+                <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 text-sm text-slate-200 backdrop-blur">
+                  <ShieldCheck className="mb-3 text-emerald-300" size={22} />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mx-auto w-full max-w-md">
+            <div className="rounded-[2rem] border border-white/15 bg-white/10 p-2 shadow-2xl shadow-black/30 backdrop-blur-2xl">
+              <div className="rounded-[1.6rem] bg-white p-8 text-slate-900 shadow-xl">
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-600">ClipForge</p>
+                    <h2 className="mt-2 text-2xl font-black tracking-tight">Admin Login</h2>
+                  </div>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/30">
+                    <Lock size={26} />
+                  </div>
+                </div>
+
+                <p className="mb-6 text-sm leading-6 text-slate-500">
+                  Masukkan password admin yang sama dengan Script Properties <span className="font-semibold text-slate-700">ADMIN_PASSWORD</span> di Google Apps Script.
+                </p>
+
+                {loginError && (
+                  <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                    <AlertCircle className="mt-0.5 shrink-0" size={18} />
+                    <span>{loginError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleAdminLogin} className="space-y-5">
+                  <div>
+                    <label className="mb-2 block text-sm font-bold text-slate-700">Admin Password</label>
+                    <div className="relative">
+                      <KeyRound className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={19} />
+                      <input
+                        type="password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        placeholder="Masukkan password admin"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" disabled={loading} className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 font-bold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-600/30 disabled:cursor-not-allowed disabled:opacity-60">
+                    Masuk Dashboard
+                    <ArrowRight className="transition group-hover:translate-x-1" size={18} />
+                  </button>
+                </form>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="mx-auto max-w-7xl">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800">License Approval</h2>
-          <p className="text-sm text-gray-500">User daftar dari app → muncul pending di sini → admin aktif/nonaktif.</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">ClipForge Admin</p>
+          <h2 className="mt-1 text-2xl font-black text-slate-900">License Approval</h2>
+          <p className="text-sm text-slate-500">User daftar dari app → muncul pending di sini → admin aktif/nonaktif.</p>
         </div>
         <div className="flex items-center gap-2">
           {pendingCount > 0 && <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">{pendingCount} pending</span>}
@@ -116,7 +176,7 @@ export default function Dashboard() {
 
       {message && <div className="mb-4 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{message}</div>}
 
-      <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-gray-50">
             <tr>
@@ -155,6 +215,7 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

@@ -13,14 +13,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 min-h-screen">
-        <nav className="bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800">ClipForge Admin</h1>
-          <div className="flex gap-4">
-            <span className="text-sm text-gray-500">Admin Mode</span>
-          </div>
-        </nav>
-        <main className="p-6">
+      <body className="min-h-screen bg-slate-950 text-slate-900 antialiased">
+        <main>
           {children}
         </main>
       </body>
