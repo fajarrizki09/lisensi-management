@@ -5,3 +5,6 @@ out
 .env
 .vercel
 *.tsbuildinfo
+license-server/
+license-server/Code.gs
+license-server/appsscript.json
