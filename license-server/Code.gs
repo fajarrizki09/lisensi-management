@@ -70,6 +70,8 @@ function doPost(e) {
       approve_license: handleApproveLicense_,
       'set-license-status': handleSetLicenseStatus_,
       set_license_status: handleSetLicenseStatus_,
+      'set-license-duration': handleSetLicenseDuration_,
+      set_license_duration: handleSetLicenseDuration_,
     };
 
     if (!handlers[path]) throw new Error('Route tidak dikenal: ' + path);
@@ -337,6 +339,44 @@ function makeAuthPayload_(token, license, message) {
 function handleApproveLicense_(body, e) {
   body.status = 'active';
   return handleSetLicenseStatus_(body, e);
+}
+
+function handleSetLicenseDuration_(body, e) {
+  return withScriptLock_(() => {
+    validateAdminPassword_(body);
+    const duration = optionalString_(body.duration).toLowerCase(); // daily, weekly, monthly, yearly, lifetime
+    const email = optionalString_(body.email).toLowerCase();
+    const licenseId = optionalString_(body.license_id || body.id);
+    const sheet = getSpreadsheet_().getSheetByName(LICENSES_SHEET);
+    const table = getTable_(sheet);
+    const rowIndex = table.rows.findIndex((row) => (licenseId && row.id === licenseId) || (email && String(row.email).toLowerCase() === email));
+    if (rowIndex === -1) throw new Error('License tidak ditemukan.');
+    const row = table.rows[rowIndex];
+
+    let expiresAt = '';
+    const date = new Date();
+    if (duration === 'daily') {
+      date.setDate(date.getDate() + 1);
+      expiresAt = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    } else if (duration === 'weekly') {
+      date.setDate(date.getDate() + 7);
+      expiresAt = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    } else if (duration === 'monthly') {
+      date.setMonth(date.getMonth() + 1);
+      expiresAt = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    } else if (duration === 'yearly') {
+      date.setFullYear(date.getFullYear() + 1);
+      expiresAt = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    } else if (duration === 'lifetime') {
+      expiresAt = ''; // Empty or null indicates lifetime (expiresAt ? ... : 'Selamanya')
+    } else {
+      throw new Error('Durasi tidak valid. Harus daily, weekly, monthly, yearly, atau lifetime.');
+    }
+
+    setCell_(sheet, table, rowIndex, 'expires_at', expiresAt);
+    appendLog_(row.user_id, row.email, 'set_license_duration', row.device_uid, e, 'Duration -> ' + duration + ' (Expires: ' + expiresAt + ')');
+    return { ok: true, message: 'Durasi license diubah ke ' + duration + '.', data: { ...row, expires_at: expiresAt }, license: { ...row, expires_at: expiresAt } };
+  });
 }
 
 function handleSetLicenseStatus_(body, e) {

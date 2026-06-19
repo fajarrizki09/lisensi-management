@@ -101,6 +101,20 @@ export default function Dashboard() {
     }
   };
 
+  const setLicenseDuration = async (license: LicenseRow, duration: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'lifetime') => {
+    setLoading(true);
+    setMessage('');
+    try {
+      await callApi({ path: 'set-license-duration', license_id: license.id, duration, admin_password: adminPassword });
+      setMessage(`${license.email} -> durasi diubah ke ${duration}`);
+      await loadLicenses();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Gagal update durasi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="login-shell" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '32px', color: '#fff', background: 'radial-gradient(circle at 12% 10%, rgba(37,99,235,.72), transparent 34%), radial-gradient(circle at 88% 88%, rgba(124,58,237,.58), transparent 32%), linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%)', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
@@ -227,13 +241,31 @@ export default function Dashboard() {
                 <td className="p-4 capitalize"><span className="rounded bg-purple-100 px-2 py-1 text-xs font-semibold text-purple-700">{license.plan || '-'}</span></td>
                 <td className="p-4"><StatusBadge status={license.status} /></td>
                 <td className="max-w-xs p-4"><div className="flex items-center gap-2 text-gray-600"><Smartphone size={16} /><span className="truncate font-mono text-xs">{license.device_uid || '-'}</span></div></td>
-                <td className="p-4 text-gray-600">{license.expires_at || '-'}</td>
+                <td className="p-4 text-gray-600">{license.expires_at || 'Lifetime'}</td>
                 <td className="p-4 text-gray-600">{license.mismatch_count || '0'}</td>
                 <td className="p-4">
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => setLicenseStatus(license, 'active')} disabled={loading} className="rounded bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-60">ACC Aktif</button>
                     <button onClick={() => setLicenseStatus(license, 'suspended')} disabled={loading} className="rounded bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-60">Nonaktif</button>
                     <button onClick={() => setLicenseStatus(license, 'revoked')} disabled={loading} className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60">Revoke</button>
+                    
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setLicenseDuration(license, e.target.value as any);
+                          e.target.value = '';
+                        }
+                      }}
+                      disabled={loading}
+                      className="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 focus:outline-none"
+                    >
+                      <option value="">Set Durasi...</option>
+                      <option value="daily">Harian (1 Hari)</option>
+                      <option value="weekly">Mingguan (7 Hari)</option>
+                      <option value="monthly">Bulanan (30 Hari)</option>
+                      <option value="yearly">Tahunan (1 Tahun)</option>
+                      <option value="lifetime">Lifetime (Selamanya)</option>
+                    </select>
                   </div>
                 </td>
               </tr>
