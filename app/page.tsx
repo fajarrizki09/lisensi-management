@@ -29,6 +29,10 @@ export default function Dashboard() {
   const [licenses, setLicenses] = useState<LicenseRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [telegramToken, setTelegramToken] = useState('');
+  const [telegramAdminChatId, setTelegramAdminChatId] = useState('');
+  const [telegramTokenPreview, setTelegramTokenPreview] = useState('');
+  const [telegramTokenSet, setTelegramTokenSet] = useState(false);
 
   const pendingCount = useMemo(() => licenses.filter((license) => license.status === 'pending').length, [licenses]);
 
@@ -65,9 +69,23 @@ export default function Dashboard() {
     }
   }, [adminPassword, callApi]);
 
+  const loadTelegramConfig = useCallback(async () => {
+    try {
+      const data = await callApi({ path: 'get-telegram-config', admin_password: adminPassword });
+      setTelegramAdminChatId(data.data?.admin_chat_id || '');
+      setTelegramTokenPreview(data.data?.bot_token_preview || '');
+      setTelegramTokenSet(!!data.data?.bot_token_set);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Gagal load pengaturan Telegram');
+    }
+  }, [adminPassword, callApi]);
+
   useEffect(() => {
-    if (isAuthenticated) loadLicenses();
-  }, [isAuthenticated, loadLicenses]);
+    if (isAuthenticated) {
+      loadLicenses();
+      loadTelegramConfig();
+    }
+  }, [isAuthenticated, loadLicenses, loadTelegramConfig]);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +128,27 @@ export default function Dashboard() {
       await loadLicenses();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Gagal update durasi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveTelegramConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    try {
+      await callApi({
+        path: 'set-telegram-config',
+        admin_password: adminPassword,
+        telegram_bot_token: telegramToken,
+        telegram_admin_chat_id: telegramAdminChatId,
+      });
+      setTelegramToken('');
+      setMessage('Pengaturan Telegram tersimpan. Deploy ulang GAS jika perlu, lalu set webhook.');
+      await loadTelegramConfig();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Gagal simpan pengaturan Telegram');
     } finally {
       setLoading(false);
     }
@@ -214,6 +253,38 @@ export default function Dashboard() {
       </div>
 
       {message && <div className="mb-4 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{message}</div>}
+
+      <form onSubmit={saveTelegramConfig} className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">Telegram Bot</p>
+            <h3 className="mt-1 text-xl font-black text-slate-900">Approval Trial Otomatis</h3>
+            <p className="text-sm text-slate-500">Isi token bot dan admin chat ID. Token lama tidak ditampilkan penuh.</p>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-sm font-semibold ${telegramTokenSet ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+            {telegramTokenSet ? `Token aktif ${telegramTokenPreview}` : 'Token belum diset'}
+          </span>
+        </div>
+        <div className="grid gap-4 md:grid-cols-[1fr_260px_auto]">
+          <input
+            type="password"
+            value={telegramToken}
+            onChange={(e) => setTelegramToken(e.target.value)}
+            placeholder="TELEGRAM_BOT_TOKEN dari BotFather"
+            className="rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500"
+          />
+          <input
+            value={telegramAdminChatId}
+            onChange={(e) => setTelegramAdminChatId(e.target.value)}
+            placeholder="TELEGRAM_ADMIN_CHAT_ID"
+            className="rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500"
+          />
+          <button type="submit" disabled={loading || (!telegramToken && !telegramAdminChatId)} className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-60">
+            Simpan Telegram
+          </button>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">Webhook tetap perlu diset: https://api.telegram.org/bot&lt;TOKEN&gt;/setWebhook?url=&lt;WEB_APP_URL&gt;</p>
+      </form>
 
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
