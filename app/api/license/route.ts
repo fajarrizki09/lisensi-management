@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const GAS_URL = process.env.GAS_LICENSE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://script.google.com/macros/s/AKfycbwkKbuRhhsfD4IkMpDGNOrzX72RvtMTAimq_pJBM5RBaKxZUVun1cjjNDXjOGRT03q9BA/exec';
+const GAS_URL = process.env.GAS_LICENSE_URL || process.env.NEXT_PUBLIC_API_URL || '';
 
 function corsHeaders() {
   return {
@@ -27,6 +27,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!GAS_URL) {
+      return NextResponse.json(
+        {
+          ok: false,
+          success: false,
+          error: 'GAS_LICENSE_URL belum diset di environment Vercel.',
+          message: 'Set GAS_LICENSE_URL ke URL Google Apps Script Web App /exec.',
+        },
+        { status: 500, headers: corsHeaders() }
+      );
+    }
+
     const rawBody = await request.text();
     let body = rawBody;
     try {
