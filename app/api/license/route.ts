@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     let body = rawBody;
     try {
       const payload = JSON.parse(rawBody || '{}');
-      if (payload.path === 'set-telegram-webhook' && !payload.web_app_url) {
+      if ((payload.path === 'set-telegram-webhook' || payload.path === 'set-telegram-config') && !payload.web_app_url) {
         payload.web_app_url = GAS_URL;
       }
       body = JSON.stringify(payload);
