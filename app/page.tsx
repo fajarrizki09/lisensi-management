@@ -199,6 +199,19 @@ export default function Dashboard() {
     }
   };
 
+  const testTelegramBot = async () => {
+    setLoading(true);
+    setMessage('');
+    try {
+      await callApi({ path: 'telegram-self-test', admin_password: adminPassword });
+      setMessage('Self-test terkirim. Cek chat Telegram admin.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Gagal self-test Telegram');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="login-shell" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '32px', color: '#fff', background: 'radial-gradient(circle at 12% 10%, rgba(37,99,235,.72), transparent 34%), radial-gradient(circle at 88% 88%, rgba(124,58,237,.58), transparent 32%), linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%)', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
@@ -372,9 +385,14 @@ export default function Dashboard() {
             Simpan Telegram
           </button>
         </div>
-        <button type="button" onClick={setTelegramWebhook} disabled={loading || !telegramTokenSet} className="mt-4 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
-          Set Webhook Otomatis
-        </button>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" onClick={setTelegramWebhook} disabled={loading || !telegramTokenSet} className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+            Set Webhook Otomatis
+          </button>
+          <button type="button" onClick={testTelegramBot} disabled={loading || !telegramTokenSet || !telegramAdminChatId} className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60">
+            Test Kirim Bot
+          </button>
+        </div>
         <p className="mt-3 text-xs text-slate-500">URL GAS diambil otomatis dari env Vercel: GAS_LICENSE_URL / NEXT_PUBLIC_API_URL.</p>
       </form>}
 
