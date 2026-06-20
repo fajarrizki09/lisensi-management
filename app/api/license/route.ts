@@ -27,7 +27,16 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text();
+    const rawBody = await request.text();
+    let body = rawBody;
+    try {
+      const payload = JSON.parse(rawBody || '{}');
+      if (payload.path === 'set-telegram-webhook' && !payload.web_app_url) {
+        payload.web_app_url = GAS_URL;
+      }
+      body = JSON.stringify(payload);
+    } catch (parseError) {}
+
     const response = await fetch(GAS_URL, {
       method: 'POST',
       body,

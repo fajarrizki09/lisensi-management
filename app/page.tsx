@@ -185,6 +185,20 @@ export default function Dashboard() {
     }
   };
 
+  const setTelegramWebhook = async () => {
+    setLoading(true);
+    setMessage('');
+    try {
+      await callApi({ path: 'set-telegram-webhook', admin_password: adminPassword });
+      setMessage('Webhook Telegram berhasil diset. Coba ketik /start di bot.');
+      await loadServerHealth();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Gagal set webhook Telegram');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="login-shell" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '32px', color: '#fff', background: 'radial-gradient(circle at 12% 10%, rgba(37,99,235,.72), transparent 34%), radial-gradient(circle at 88% 88%, rgba(124,58,237,.58), transparent 32%), linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%)', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
@@ -358,7 +372,10 @@ export default function Dashboard() {
             Simpan Telegram
           </button>
         </div>
-        <p className="mt-3 text-xs text-slate-500">Webhook tetap perlu diset: https://api.telegram.org/bot&lt;TOKEN&gt;/setWebhook?url=&lt;WEB_APP_URL&gt;</p>
+        <button type="button" onClick={setTelegramWebhook} disabled={loading || !telegramTokenSet} className="mt-4 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+          Set Webhook Otomatis
+        </button>
+        <p className="mt-3 text-xs text-slate-500">URL GAS diambil otomatis dari env Vercel: GAS_LICENSE_URL / NEXT_PUBLIC_API_URL.</p>
       </form>}
 
       {activeMenu === 'licenses' && <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
