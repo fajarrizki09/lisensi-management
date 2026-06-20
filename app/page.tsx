@@ -18,6 +18,21 @@ type LicenseRow = {
   effective_status?: string;
 };
 
+type HealthCheck = {
+  key: string;
+  label: string;
+  ok: boolean;
+  value: string;
+};
+
+type ServerHealth = {
+  server_time: string;
+  spreadsheet_id: string;
+  spreadsheet_url: string;
+  checks: HealthCheck[];
+  stats: Record<string, number>;
+};
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/license';
 const ADMIN_SESSION_KEY = 'clipforge-admin-session';
 const ADMIN_PASSWORD_KEY = 'clipforge-admin-password';
@@ -33,6 +48,8 @@ export default function Dashboard() {
   const [telegramAdminChatId, setTelegramAdminChatId] = useState('');
   const [telegramTokenPreview, setTelegramTokenPreview] = useState('');
   const [telegramTokenSet, setTelegramTokenSet] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<'licenses' | 'health'>('licenses');
+  const [serverHealth, setServerHealth] = useState<ServerHealth | null>(null);
 
   const pendingCount = useMemo(() => licenses.filter((license) => license.status === 'pending').length, [licenses]);
 
@@ -80,12 +97,26 @@ export default function Dashboard() {
     }
   }, [adminPassword, callApi]);
 
+  const loadServerHealth = useCallback(async () => {
+    setLoading(true);
+    setMessage('');
+    try {
+      const data = await callApi({ path: 'server-health', admin_password: adminPassword });
+      setServerHealth(data.data || null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Gagal load server health');
+    } finally {
+      setLoading(false);
+    }
+  }, [adminPassword, callApi]);
+
   useEffect(() => {
     if (isAuthenticated) {
       loadLicenses();
       loadTelegramConfig();
+      loadServerHealth();
     }
-  }, [isAuthenticated, loadLicenses, loadTelegramConfig]);
+  }, [isAuthenticated, loadLicenses, loadTelegramConfig, loadServerHealth]);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,9 +283,53 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <div className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+        <button onClick={() => setActiveMenu('licenses')} className={`rounded-xl px-4 py-2 text-sm font-bold ${activeMenu === 'licenses' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Licenses</button>
+        <button onClick={() => { setActiveMenu('health'); loadServerHealth(); }} className={`rounded-xl px-4 py-2 text-sm font-bold ${activeMenu === 'health' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>Server Health</button>
+      </div>
+
       {message && <div className="mb-4 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{message}</div>}
 
-      <form onSubmit={saveTelegramConfig} className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      {activeMenu === 'health' && serverHealth && (
+        <div className="mb-6 grid gap-6">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">Server Health</p>
+                <h3 className="mt-1 text-xl font-black text-slate-900">Checklist & Data Server</h3>
+                <p className="text-sm text-slate-500">Server time: {serverHealth.server_time || '-'}</p>
+              </div>
+              <button onClick={loadServerHealth} disabled={loading} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">Cek Ulang</button>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {serverHealth.checks.map((check) => (
+                <div key={check.key} className="rounded-2xl border border-slate-200 p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    {check.ok ? <CheckCircle2 size={18} className="text-green-600" /> : <XCircle size={18} className="text-red-600" />}
+                    <span className="font-bold text-slate-900">{check.label}</span>
+                  </div>
+                  <p className="break-all text-xs text-slate-500">{check.value || '-'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="mb-4 text-xl font-black text-slate-900">Data Ringkas</h3>
+            <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              {Object.entries(serverHealth.stats || {}).map(([key, value]) => (
+                <div key={key} className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{key.replace(/_/g, ' ')}</p>
+                  <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
+                </div>
+              ))}
+            </div>
+            <a href={serverHealth.spreadsheet_url} target="_blank" rel="noreferrer" className="mt-4 inline-flex text-sm font-bold text-blue-600 hover:text-blue-700">Buka Google Sheet</a>
+          </div>
+        </div>
+      )}
+
+      {activeMenu === 'licenses' && <form onSubmit={saveTelegramConfig} className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">Telegram Bot</p>
@@ -284,9 +359,9 @@ export default function Dashboard() {
           </button>
         </div>
         <p className="mt-3 text-xs text-slate-500">Webhook tetap perlu diset: https://api.telegram.org/bot&lt;TOKEN&gt;/setWebhook?url=&lt;WEB_APP_URL&gt;</p>
-      </form>
+      </form>}
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      {activeMenu === 'licenses' && <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-gray-50">
             <tr>
@@ -343,7 +418,7 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
       </div>
     </div>
   );
