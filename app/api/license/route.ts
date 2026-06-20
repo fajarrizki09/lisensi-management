@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const GAS_URL = process.env.GAS_LICENSE_URL || process.env.NEXT_PUBLIC_API_URL || '';
 
+function getTelegramWebhookUrl(request: NextRequest) {
+  const envUrl = process.env.TELEGRAM_WEBHOOK_URL || process.env.NEXT_PUBLIC_TELEGRAM_WEBHOOK_URL || '';
+  if (envUrl) return envUrl.replace(/\/$/, '');
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || '';
+  if (!host) return '';
+  const protocol = request.headers.get('x-forwarded-proto') || 'https';
+  return `${protocol}://${host.replace(/^https?:\/\//, '').replace(/\/$/, '')}/api/telegram`;
+}
+
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
@@ -44,7 +53,7 @@ export async function POST(request: NextRequest) {
     try {
       const payload = JSON.parse(rawBody || '{}');
       if ((payload.path === 'set-telegram-webhook' || payload.path === 'set-telegram-config') && !payload.web_app_url) {
-        payload.web_app_url = GAS_URL;
+        payload.web_app_url = getTelegramWebhookUrl(request) || GAS_URL;
       }
       body = JSON.stringify(payload);
     } catch (parseError) {}
